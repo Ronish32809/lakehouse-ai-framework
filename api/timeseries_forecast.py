@@ -32,7 +32,7 @@ MIN_TEST_POINTS = 2
 
 LEARNING_RATE = 0.001
 DEFAULT_LSTM_UNITS = 32
-DEFAULT_LSTM_ACT = "tanh"  # only used to keep same UI signature
+DEFAULT_LSTM_ACT = "tanh"  
 
 np.random.seed(42)
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")

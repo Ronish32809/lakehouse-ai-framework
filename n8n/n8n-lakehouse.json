@@ -1,0 +1,464 @@
+{
+  "name": "n8n-lakehouse",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lakehouse",
+        "responseMode": "responseNode",
+        "options": {
+          "binaryPropertyName": "file"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        192
+      ],
+      "id": "a357a462-6a39-4884-8b51-c4c43505f02b",
+      "name": "API Entry (Webhook Trigger)",
+      "webhookId": "9a3568a6-8c2e-4e26-ae2e-5d00c252b909"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "62dc8d83-4a73-41ae-98ef-db60b463d1a8",
+              "name": "channel",
+              "value": "webhook",
+              "type": "string"
+            },
+            {
+              "id": "7e42a271-6f56-45f5-af63-0e9a454a5d38",
+              "name": "task",
+              "value": "={{$json.body.task}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        192
+      ],
+      "id": "d2b68fb0-2441-4242-965b-a59eef9b6621",
+      "name": "Clean & Standardize Request"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "water",
+                    "rightValue": "={{$json.task}}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "3f833b3c-946c-4394-a79b-a7e283a3a6d2"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "811d5f4e-088f-4d09-9581-183b47906181",
+                    "leftValue": "kpi",
+                    "rightValue": "={{$json.task}}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "135368d0-6c62-4cf9-a40a-350105f32831",
+                    "leftValue": "tumor",
+                    "rightValue": "={{$json.task}}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        176
+      ],
+      "id": "634a464c-23cd-4305-b03e-747e1f0d97f6",
+      "name": "Route by Task (water / kpi / tumor)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/water/predict",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$json}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        896,
+        0
+      ],
+      "id": "91bb7050-b669-42c3-8253-133d0b29041f",
+      "name": "Water: Call ML API (/water/predict)"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1344,
+        0
+      ],
+      "id": "1ca9fcea-9f74-4479-b972-66a671e180d8",
+      "name": "Return Water Result",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/kpi/forecast",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"school\": \"{{$json.body.university}}\",\n  \"target\": \"{{$json.body.metric}}\",\n  \"steps\": {{$json.body.steps}}\n}\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        672,
+        192
+      ],
+      "id": "7cc5224c-e2cc-4955-b11c-e8a11680c01c",
+      "name": "KPI: Call ML API (/kpi/predict)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $json;\n\n// Make sure future_index is always an array\nlet futureIndex = d.future_index;\n\nif (!Array.isArray(futureIndex)) {\n  futureIndex = String(futureIndex)\n    .split(\",\")\n    .map(x => x.trim())\n    .filter(x => x.length > 0);\n}\n\n\n// Convert forecast values to whole numbers\nconst rfForecast = Array.isArray(d.rf_forecast)\n  ? d.rf_forecast.map(v => Math.round(v))\n  : [];\n\nconst lstmForecast = Array.isArray(d.lstm_forecast)\n  ? d.lstm_forecast.map(v => Math.round(v))\n  : [];\n\n// If LSTM forecast exists, use it\n// Otherwise fall back to Random Forest\nconst finalForecast =\n  lstmForecast.length > 0 ? lstmForecast : rfForecast;\n\n// Build the final response object\nreturn [\n  {\n    json: {\n      task: d.task || \"kpi\",\n      school: d.school,\n      target: d.target,\n      steps: d.steps,\n      unit: \"students\",\n      future_index: futureIndex,\n      rf_forecast: rfForecast,\n      lstm_forecast: lstmForecast,\n      final_forecast: finalForecast,\n      date_column_used: d.date_column_used\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        192
+      ],
+      "id": "3de8c427-6847-42b8-98af-b8d39577d8a2",
+      "name": "KPI: Fix Arrays + Round Values"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1120,
+        192
+      ],
+      "id": "f94fd8de-0d17-4bde-8ec8-2bc605e692f0",
+      "name": "Return KPI Forecast"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/tumor/predict",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "file0"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        672,
+        384
+      ],
+      "id": "d00be096-d6b4-47a7-b51e-ed219ca6d28d",
+      "name": "Tumor: Call ML API (/tumor/predict)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const b64 = $json.segmentation_mask_png_base64;\n\nif (!b64) {\n  throw new Error(\"segmentation_mask_png_base64 is missing\");\n}\n\nreturn [{\n  json: {\n    task: $json.task,\n    class: $json.class,\n    confidence: $json.confidence,\n    probabilities: $json.probabilities,\n\n    // keep this for the UI\n    segmentation_mask_png_base64: b64\n  },\n  binary: {\n    mask: {\n      data: b64,\n      mimeType: \"image/png\",\n      fileName: \"mask.png\"\n    }\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        384
+      ],
+      "id": "05e078b5-2dc4-4b92-923a-21a9c38be667",
+      "name": "Tumor: Convert Mask (Base64 → Image)"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1120,
+        384
+      ],
+      "id": "9dac789a-a71c-4383-8228-c1a55d2c635a",
+      "name": "Return Tumor Class + Mask Image"
+    },
+    {
+      "parameters": {
+        "jsCode": "const b = $json.body?.features ?? $json.body ?? $json.features ?? $json;\n\nconst num = (v) => {\n  const n = Number(v);\n  return Number.isFinite(n) ? n : null;\n};\n\nreturn [{\n  json: {\n    task: \"water\",\n    ph: num(b.ph ?? b.pH),\n\n    Nitrate: num(b.Nitrate ?? b.nitrate),\n    Chloride: num(b.Chloride ?? b.chloride),\n    Lead: num(b.Lead ?? b.lead),\n    Turbidity: num(b.Turbidity ?? b.turbidity),\n    Sulfate: num(b.Sulfate ?? b.sulfate),\n    Conductivity: num(b.Conductivity ?? b.conductivity),\n\n    // IMPORTANT: keep BOTH keys so your backend can match either style\n    \"Total Dissolved Solids\": num(\n      b[\"Total Dissolved Solids\"] ?? b.total_dissolved_solids ?? b.totalDissolvedSolids\n    ),\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "d8f3392d-44ee-4afe-a5b8-454489141e01",
+      "name": "Water: Normalize"
+    },
+    {
+      "parameters": {
+        "jsCode": "const root = $json || {};\nconst api = (root.result && typeof root.result === \"object\") ? root.result : root;\n\n// helpers\nconst clean = (v) => String(v ?? \"\").trim().replace(/^=/, \"\"); // remove leading \"=\"\n\nconst toNumber = (v) => {\n  const n = Number(clean(v));\n  return Number.isFinite(n) ? n : null;\n};\n\nconst toPercent = (x) => {\n  const n = toNumber(x);\n  return n === null ? null : Number((n * 100).toFixed(2)); // keep as number (percent)\n};\n\n// read fields from API\nconst predNum = toNumber(api.prediction);\nconst probRaw = toNumber(api.probability_potable);\n\nconst modelUsed = api.model_used ?? \"N/A\";\nconst modelAccNum = toNumber(api.model_accuracy);\n\n// label (SAFE/UNSAFE)\nlet label = \"UNKNOWN\";\nlet message = \"Missing prediction.\";\n\nif (typeof api.potable === \"boolean\") {\n  label = api.potable ? \"SAFE\" : \"UNSAFE\";\n  message = `Prediction computed (${label}).`;\n} else if (predNum !== null) {\n  label = (predNum === 1) ? \"SAFE\" : \"UNSAFE\"; // flip if your model uses opposite\n  message = `Prediction computed (${label}).`;\n}\n\n// probability normalize to 0..1\nlet probNum = null;\nif (probRaw !== null) probNum = probRaw > 1 ? probRaw / 100 : probRaw;\n\n// find best model (highest accuracy)\nlet bestModel = \"N/A\";\nlet bestAcc = null;\n\nif (api.all_accuracies && typeof api.all_accuracies === \"object\") {\n  for (const [name, acc] of Object.entries(api.all_accuracies)) {\n    const a = toNumber(acc);\n    if (a !== null && (bestAcc === null || a > bestAcc)) {\n      bestAcc = a;\n      bestModel = name;\n    }\n  }\n}\n\nreturn [{\n  json: {\n    label,\n    prediction: predNum,                 // number or null\n    probability_potable: probNum,        // number or null\n\n    model_used: modelUsed,\n    model_accuracy: modelAccNum,         // number or null\n    model_accuracy_percent: toPercent(modelAccNum), // number like 66.77 or null\n\n    best_model: bestModel,\n    best_model_accuracy: bestAcc,        // number or null\n\n    message\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "99875dea-7eb8-42b4-a95d-436747d09fdd",
+      "name": "Build Result"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "API Entry (Webhook Trigger)": {
+      "main": [
+        [
+          {
+            "node": "Clean & Standardize Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean & Standardize Request": {
+      "main": [
+        [
+          {
+            "node": "Route by Task (water / kpi / tumor)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Task (water / kpi / tumor)": {
+      "main": [
+        [
+          {
+            "node": "Water: Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "KPI: Call ML API (/kpi/predict)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tumor: Call ML API (/tumor/predict)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Water: Call ML API (/water/predict)": {
+      "main": [
+        [
+          {
+            "node": "Build Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "KPI: Call ML API (/kpi/predict)": {
+      "main": [
+        [
+          {
+            "node": "KPI: Fix Arrays + Round Values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "KPI: Fix Arrays + Round Values": {
+      "main": [
+        [
+          {
+            "node": "Return KPI Forecast",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tumor: Call ML API (/tumor/predict)": {
+      "main": [
+        [
+          {
+            "node": "Tumor: Convert Mask (Base64 → Image)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tumor: Convert Mask (Base64 → Image)": {
+      "main": [
+        [
+          {
+            "node": "Return Tumor Class + Mask Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Water: Normalize": {
+      "main": [
+        [
+          {
+            "node": "Water: Call ML API (/water/predict)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Result": {
+      "main": [
+        [
+          {
+            "node": "Return Water Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "624e3c25-a682-4230-b1c5-75aff5d1d45e",
+  "meta": {
+    "instanceId": "ad2540c06c9d26b1a10ba86b48e51b1f3a20f6a0b05f00abb504ab2bb4dbb2f0"
+  },
+  "id": "5IGWvDgXadghocPRXoFPP",
+  "tags": []
+}

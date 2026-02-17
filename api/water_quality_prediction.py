@@ -22,8 +22,8 @@ from sklearn.neighbors import KNeighborsClassifier
 # Basic Settings
 # -------------------------
 TARGET_COL = "Target"
-MODEL_FILE = "model.pkl"
-METRICS_FILE = "metrics.json"
+MODEL_FILE = "models/model.pkl"
+METRICS_FILE = "models/metrics.json"
 
 # Only keep the important columns (must match your dataset column names)
 FEATURE_WHITELIST = [

@@ -56,13 +56,13 @@ def water_predict(features: WaterFeatures):
 # KPI Forecast
 # -------------------------
 KPI_FILES = {
-    "boise": "boise_state_kpi.xlsx",
-    "eastern": "eastern_oregon_kpi.xlsx",
-    "uab": "uab_kpi.xlsx",
+    "boise": "data/boise_state_kpi.xlsx",
+    "eastern": "data/eastern_oregon_kpi.xlsx",
+    "uab": "data/uab_kpi.xlsx",
 
     # aliases
-    "boise_state": "boise_state_kpi.xlsx",
-    "eastern_oregon": "eastern_oregon_kpi.xlsx",
+    "boise_state": "data/boise_state_kpi.xlsx",
+    "eastern_oregon": "data/eastern_oregon_kpi.xlsx",
 }
 
 
@@ -168,8 +168,8 @@ def kpi_predict(req: KpiRequest):
 # -------------------------
 # Tumor (Classifier + Seg)
 # -------------------------
-CLASSIFIER_FILE = "brain_tumor_classifier_4cls.pt"
-SEG_FILE = "seg_deeplabv3_2cls.pt"
+CLASSIFIER_FILE = "models/brain_tumor_classifier_4cls.pt"
+SEG_FILE = "models/seg_deeplabv3_2cls.pt"
 
 clf_model = None
 seg_model = None
