@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environments
+venv/
+.env/
+lamar-env/
+*.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Model artifacts (optional)
+*.pt
+*.pkl
+metrics.json
+model.pkl
+
+# Big data files (optional)
+*.csv
+*.xlsx
+*.zip

@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+torch
+torchvision
+torchaudio
+scikit-learn
+pandas
+numpy
+openpyxl
+matplotlib
