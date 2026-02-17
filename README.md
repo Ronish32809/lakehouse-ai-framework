@@ -10,4 +10,4 @@ This repository contains a unified Lakehouse-style AI system:
 ### 1) Clone
 ```bash
 git clone https://github.com/Ronish32809/lakehouse-ai-framework.git
-cd lakehouse-ml-api
+cd lakehouse-ai-framework
